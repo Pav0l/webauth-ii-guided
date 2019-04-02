@@ -11,6 +11,8 @@ router.post('/register', (req, res) => {
 
   Users.add(user)
     .then(saved => {
+      // on succesfull login do: `.session` object comes from express-session library
+      req.session.user = saved;
       res.status(201).json(saved);
     })
     .catch(error => {
@@ -25,6 +27,8 @@ router.post('/login', (req, res) => {
     .first()
     .then(user => {
       if (user && bcrypt.compareSync(password, user.password)) {
+        // `.session` object comes from express-session library
+        req.session.user = user;
         res.status(200).json({
           message: `Welcome ${user.username}!`,
         });
@@ -36,5 +40,13 @@ router.post('/login', (req, res) => {
       res.status(500).json(error);
     });
 });
+
+// create LOG OUT endpoint
+router.get('/logout', (req, res) => {
+  req.session.destroy();
+  // you need to send a response from the endpoint, so the browser doesn't get stuck waiting for it
+  res.end();
+});
+
 
 module.exports = router;
